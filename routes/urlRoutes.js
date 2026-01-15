@@ -1,5 +1,14 @@
 const express = require('express');
 
+const isValidUrl = (url) => {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+};
+
 const models = require("../models/Url");
 const Url = require('../models/Url');
 const router = express.Router();
@@ -18,11 +27,11 @@ router.post("/shorten", async(req, res)=>{
         const{url} = req.body;
 
         //1. validation
-        if(!url){
+        if (!url || !isValidUrl(url)) {
             return res.status(400).json({
-                error: "Url is required bro"
-            });
-        }
+                error: "Invalid URL bro. Must start with http:// or https:// "
+                });
+            }
 
         //2. Generate unique short code
         const shortCode = nanoid(6);
@@ -87,11 +96,11 @@ router.put("/shorten/:shortCode", async(req, res) => {
         const {url} = req.body;
 
         //1. Validate input
-        if(!url){
+        if (!url || !isValidUrl(url)) {
             return res.status(400).json({
-                error:"URL is required"
-            });
-        }
+                error: "Invalid URL bro. Must start with http:// or https:// "
+                });
+            }
 
         //2. Find and update
         const updatedUrl = await Url.findOneAndUpdate(
@@ -113,7 +122,7 @@ router.put("/shorten/:shortCode", async(req, res) => {
             url: updatedUrl.url,
             shortCode: updatedUrl.shortCode,
             createdAt: updatedUrl.createdAt,
-            updatedAt: updatedUrl.updatedUrl
+            updatedAt: updatedUrl.updatedAt
         });
     } catch (error) {
         res.status(500).json({
@@ -169,6 +178,37 @@ router.get("/shorten/:shortCode/stats", async(req,res)=>{
     } catch (error) {
         res.status(500).json({
             error:"Internal server error"
+        });
+    }
+});
+
+
+
+//GET /:shortCode -> Redirecttttt
+router.get("/:shortCode", async (req, res) =>{
+    try {
+        const {shortCode} = req.params;
+
+        //1. find the url
+        const urlData = await Url.findOne({shortCode});
+
+        //2. if not found
+        if(!urlData){
+            return res.status(404).json({
+                error:"Short URL not found"
+            });
+        }
+
+        //3. increment access count
+        urlData.accessCount += 1;
+        await urlData.save();
+        
+        
+        //4. redirect to orginal url
+        res.redirect(urlData.url);
+    } catch (error) {
+        res.status(500).json({
+            error: "Internal Server Error"
         });
     }
 });
