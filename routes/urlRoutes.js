@@ -146,21 +146,9 @@ router.delete("/shorten/:shortCode", async (req, res) => {
 //redirect route
 router.get("/:shortCode", async (req, res) => {
   try {
-    const rawCode = req.params.shortCode;
-    const shortCode = rawCode.trim();
-
-    console.log("RAW shortCode:", JSON.stringify(rawCode));
-    console.log("NORMALIZED shortCode:", JSON.stringify(shortCode));
-
-    const allUrls = await Url.find({});
-    console.log(
-      "ALL shortCodes in DB:",
-      allUrls.map(u => JSON.stringify(u.shortCode))
-    );
+    const shortCode = normalizeCode(req.params.shortCode);
 
     const urlData = await Url.findOne({ shortCode });
-
-    console.log("QUERY RESULT:", urlData);
 
     if (!urlData) {
       return res.status(404).json({ error: "Short URL not found" });
@@ -170,8 +158,7 @@ router.get("/:shortCode", async (req, res) => {
     await urlData.save();
 
     return res.redirect(urlData.url);
-  } catch (err) {
-    console.error("REDIRECT ERROR:", err);
+  } catch {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 });

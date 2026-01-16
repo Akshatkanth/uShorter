@@ -37,7 +37,7 @@ function Home() {
 
       const data = await response.json();
 
-      const fullShortUrl = `${BASE_URL}/${data.shortCode}${data.shortCode}`;
+      const fullShortUrl = `${BASE_URL}/${data.shortCode}`;
       setShortUrl(fullShortUrl);
     } catch (err) {
       setError("Something went wrong. Try again.");
