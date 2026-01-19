@@ -7,6 +7,8 @@ function Stats() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [deleted, setDeleted] = useState(false);
+
 
   const extractShortCode = (value) => {
     try {
@@ -46,6 +48,35 @@ function Stats() {
     }
   };
 
+  const handleDelete = async () => {
+  const confirmDelete = window.confirm(
+    "Are you sure you want to delete this short URL? This action cannot be undone."
+  );
+
+  if (!confirmDelete) return;
+
+  try {
+    const shortCode = extractShortCode(input);
+
+    const response = await fetch(
+      `${BASE_URL}/shorten/${shortCode}`,
+      {
+        method: "DELETE"
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Delete failed");
+    }
+
+    setDeleted(true);
+    setStats(null);
+    setInput("");
+  } catch (err) {
+    setError("Failed to delete short URL");
+  }
+};
+
   return (
     <div className="page">
       <div className={`card ${error ? "shake" : ""}`}>
@@ -67,19 +98,30 @@ function Stats() {
 
         {stats && (
           <div className="result">
-            <p><strong>Original URL:</strong> {stats.url}</p>
-            <p><strong>Short Code:</strong> {stats.shortCode}</p>
-            <p><strong>Access Count:</strong> {stats.accessCount}</p>
-            <p>
-              <strong>Created At:</strong>{" "}
-              {new Date(stats.createdAt).toLocaleString()}
-            </p>
-            <p>
-              <strong>Updated At:</strong>{" "}
-              {new Date(stats.updatedAt).toLocaleString()}
-            </p>
-          </div>
-        )}
+          <p><strong>Original URL:</strong> {stats.url}</p>
+          <p><strong>Short Code:</strong> {stats.shortCode}</p>
+          <p><strong>Access Count:</strong> {stats.accessCount}</p>
+          <p>
+            <strong>Created At:</strong>{" "}
+            {new Date(stats.createdAt).toLocaleString()}
+          </p>
+          <p>
+            <strong>Updated At:</strong>{" "}
+            {new Date(stats.updatedAt).toLocaleString()}
+          </p>
+
+          <button className="delete-btn" onClick={handleDelete}>
+            DELETE URL
+          </button>
+        </div>
+      )}
+
+      {deleted && (
+        <div className="success">
+          Short URL deleted successfully.
+        </div>
+      )}
+
       </div>
     </div>
   );

@@ -233,3 +233,25 @@
 .input.error-input {
   background: #ffe5e5;
 }
+
+.delete-btn {
+  margin-top: 16px;
+  padding: 12px;
+  width: 100%;
+  border: 3px solid black;
+  background: #ff5252;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  background: white;
+}
+
+.success {
+  margin-top: 16px;
+  padding: 12px;
+  border: 3px solid black;
+  background: #4caf50;
+  font-weight: bold;
+}
